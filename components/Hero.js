@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useStatus } from "../context/statusContext";
-
 import {
   getMaxMintAmount,
   getTotalSupply,
@@ -26,7 +25,6 @@ const Hero = () => {
       setIsSaleActive(await getSaleState());
       await updateTotalSupply();
     };
-
     prepare();
   });
 

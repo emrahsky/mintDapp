@@ -2,11 +2,9 @@ import Head from "next/head";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useStatus } from "../context/statusContext";
-import { connectWallet, getCurrentWalletConnected } from "../utils/interact";
+import { connectWallet, getCurrentWalletConnected, web3, changeChain } from "../utils/interact";
 import {} from "../utils/chains";
 
-const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-const web3 = createAlchemyWeb3(process.env.NEXT_PUBLIC_API_URL);
 
 const Header = () => {
   const { setStatus } = useStatus();
@@ -46,25 +44,22 @@ const Header = () => {
           setWalletAddress(accounts[0]);
           setWalletBalance(formatedBalance);
           setStatus("");
-
-          console.log(accounts[0] + " --- " + formatedBalance + " --- " + chainName);
-
         } else {
           setWalletAddress("");
           setStatus("🦊 Connect to Metamask using Connect Wallet button.");
         }
       });
 
-      window.ethereum.on('networkChanged', async (networkId) => {
+      ethereum.on('chainChanged', async (chainId) => {      // bunun yerine networkChanged daha başarılı fakat kullanımdan kaldırılacak !
+        let networkId = window.ethereum.networkVersion;
         let chainName = chainMap[networkId].name;
-        setWalletChainName(chainName);
         let accounts = await window.ethereum.request({method: 'eth_requestAccounts'});
-        setWalletAddress(accounts[0]);
         let balance = await web3.eth.getBalance(accounts[0]);
         let formatedBalance = web3.utils.fromWei(balance, "ether");
+        setWalletChainName(chainName);
+        setWalletAddress(accounts[0]);
         setWalletBalance(formatedBalance);
-
-        console.log(accounts[0] + " --- " + formatedBalance + " --- " + chainName);
+        window.location.reload();
       });
     }
   };

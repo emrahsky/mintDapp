@@ -1,10 +1,20 @@
 import {} from "../utils/chains";
+import Web3 from "web3";
+
+
+/*
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const web3 = createAlchemyWeb3(process.env.NEXT_PUBLIC_API_URL);
 
 const contract = require("../artifacts/contracts/Aydogan.sol/Aydogan.json");
 const contractAddress = "0xd7C07aE2338bCf21868B23c7221AbA3a9Ee09383";
-const nftContract = new web3.eth.Contract(contract.abi, contractAddress);
+const nftContract = new web3.eth.Contract(contract.abi, contractAddress);*/
+
+export const web3 = new Web3(Web3.givenProvider); 
+const nftWeb3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'));
+const contract = require("../artifacts/contracts/Aydogan.sol/Aydogan.json");
+const contractAddress = "0xd7C07aE2338bCf21868B23c7221AbA3a9Ee09383";
+export const nftContract = new nftWeb3.eth.Contract(contract.abi, contractAddress);
 
 export const connectWallet = async () => {
   if (window.ethereum) {
@@ -54,16 +64,11 @@ export const getCurrentWalletConnected = async () => {
       const addressArray = await window.ethereum.request({
         method: "eth_accounts",
       });
-      console.log(addressArray);
       if (addressArray.length > 0) {
         let balance = await web3.eth.getBalance(addressArray[0]);
         let formatedBalance = web3.utils.fromWei(balance, "ether");
         let netWorkchainID = window.ethereum.networkVersion;
         let chainName = chainMap[netWorkchainID].name;
-
-        
-        console.log(addressArray[0] + " --- " + formatedBalance + " --- " + chainName);
-
         return {
           address: addressArray[0],
           status: "",
@@ -105,6 +110,13 @@ export const getCurrentWalletConnected = async () => {
   }
 };
 
+export const changeChain = async () => {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: web3.utils.toHex(1) }]
+    });
+};
+
 // Contract Methods
 
 export const getMaxMintAmount = async () => {
@@ -129,6 +141,7 @@ export const getSaleState = async () => {
 };
 
 export const mintNFT = async (mintAmount) => {
+  await changeChain();
   if (!window.ethereum.selectedAddress) {
     return {
       success: false,
